@@ -16,7 +16,7 @@ export const jsonsHeaders = ((array) => Array.from(
  .reduce((a, b) => new Set([...a, ...b]), [])
 ));
 
-export const jsons2arrays = (jsons, headers) => {
+export const jsons2arrays = (jsons, headers, inserts) => {
   headers = headers || jsonsHeaders(jsons);
 
   // allow headers to have custom labels, defaulting to having the header data key be the label
@@ -28,7 +28,7 @@ export const jsons2arrays = (jsons, headers) => {
   }
 
   const data = jsons.map((object) => headerKeys.map((header) => getHeaderValue(header, object)));
-  return [headerLabels, ...data];
+  return [inserts, headerLabels, ...data];
 };
 
 export const getHeaderValue = (property, obj) => {
@@ -48,7 +48,7 @@ export const getHeaderValue = (property, obj) => {
 }
 
 export const elementOrEmpty = (element) => {
-  (typeof element === 'undefined' || element === null) ? '' : element;
+  return ( (typeof element === 'undefined' || element === null) ? '' : element );
 };
 
 export const joiner = ((data, separator = ',', enclosingCharacter = '"') => {
@@ -56,34 +56,36 @@ export const joiner = ((data, separator = ',', enclosingCharacter = '"') => {
     .filter(e => e)
     .map(
       row => row
-        .map((element) => elementOrEmpty(element))
+        .map((element) => { return elementOrEmpty(element) })
         .map(column => `${enclosingCharacter}${column}${enclosingCharacter}`)
         .join(separator)
     )
     .join(`\n`);
 });
 
-export const arrays2csv = ((data, headers, separator, enclosingCharacter) =>
+export const arrays2csv = ((data, headers, inserts, separator, enclosingCharacter) =>
  joiner(headers ? [headers, ...data] : data, separator, enclosingCharacter)
 );
 
-export const jsons2csv = ((data, headers, separator, enclosingCharacter) =>
- joiner(jsons2arrays(data, headers), separator, enclosingCharacter)
+export const jsons2csv = ((data, headers, inserts, separator, enclosingCharacter) => {
+   const result = joiner(jsons2arrays(data, headers, inserts), separator, enclosingCharacter)
+   return result;
+  }
 );
 
 export const string2csv = ((data, headers, separator, enclosingCharacter) =>
   (headers) ? `${headers.join(separator)}\n${data}`: data
 );
 
-export const toCSV = (data, headers, separator, enclosingCharacter) => {
- if (isJsons(data)) return jsons2csv(data, headers, separator, enclosingCharacter);
- if (isArrays(data)) return arrays2csv(data, headers, separator, enclosingCharacter);
+export const toCSV = (data, headers, inserts, separator, enclosingCharacter) => {
+ if (isJsons(data)) return jsons2csv(data, headers, inserts, separator, enclosingCharacter);
+ if (isArrays(data)) return arrays2csv(data, headers, inserts, separator, enclosingCharacter);
  if (typeof data ==='string') return string2csv(data, headers, separator);
  throw new TypeError(`Data should be a "String", "Array of arrays" OR "Array of objects" `);
 };
 
-export const buildURI = ((data, uFEFF, headers, separator, enclosingCharacter) => {
-  const csv = toCSV(data, headers, separator, enclosingCharacter);
+export const buildURI = ((data, uFEFF, headers, inserts, separator, enclosingCharacter) => {
+  const csv = toCSV(data, headers, inserts, separator, enclosingCharacter);
   const type = isSafari() ? 'application/csv' : 'text/csv';
   const blob = new Blob([uFEFF ? '\uFEFF' : '', csv], {type});
   const dataURI = `data:${type};charset=utf-8,${uFEFF ? '\uFEFF' : ''}${csv}`;

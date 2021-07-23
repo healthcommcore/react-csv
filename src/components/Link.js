@@ -20,14 +20,14 @@ class CSVLink extends React.Component {
   }
 
   componentDidMount() {
-    const {data, headers, separator, uFEFF, enclosingCharacter} = this.props;
-    this.setState({ href: this.buildURI(data, uFEFF, headers, separator, enclosingCharacter) });
+    const {data, headers, inserts, separator, uFEFF, enclosingCharacter} = this.props;
+    this.setState({ href: this.buildURI(data, uFEFF, headers, inserts, separator, enclosingCharacter) });
   }
 
   componentDidUpdate(prevProps) {
     if (this.props !== prevProps) {
-      const { data, headers, separator, uFEFF } = this.props;
-      this.setState({ href: this.buildURI(data, uFEFF, headers, separator) });
+      const { data, headers, inserts, separator, uFEFF } = this.props;
+      this.setState({ href: this.buildURI(data, uFEFF, headers, inserts, separator) });
     }
   }
 
@@ -46,6 +46,7 @@ class CSVLink extends React.Component {
 
       const {
         data,
+        inserts,
         headers,
         separator,
         filename,
@@ -53,7 +54,7 @@ class CSVLink extends React.Component {
         uFEFF
       } = this.props;
 
-      let blob = new Blob([uFEFF ? '\uFEFF' : '', toCSV(data, headers, separator, enclosingCharacter)]);
+      let blob = new Blob([uFEFF ? '\uFEFF' : '', toCSV(data, headers, inserts, separator, enclosingCharacter)]);
       window.navigator.msSaveBlob(blob, filename);
 
       return false;
@@ -95,6 +96,7 @@ class CSVLink extends React.Component {
   render() {
     const {
       data,
+      inserts,
       headers,
       separator,
       filename,

@@ -136,11 +136,17 @@ describe('In browser environment', () => {
         expect(window.navigator.msSaveBlob.calledWith(filename)).toBeTruthy;
       });
     });
+
+    describe('allow extra data', () => {
+      it('adds extra data', () => {
+      });
+    });
      // TODO write unit-tests for handleClick
      // TODO write unit-tests for handleSyncClick
      // TODO write unit-tests for handleAsyncClick
  
     }); 
+
  
    describe('CSVDownload', () => {
      let minProps;
